@@ -1,0 +1,50 @@
+{
+  "model_config": {
+    "input_size": [416, 416],
+    "confidence_threshold": 0.6,
+    "nms_threshold": 0.4,
+    "max_detections": 100
+  },
+  "classes": [
+    "car",
+    "truck", 
+    "motorcycle",
+    "bus",
+    "bicycle",
+    "person",
+    "accident",
+    "collision",
+    "crash",
+    "fire",
+    "smoke"
+  ],
+  "detection_settings": {
+    "enable_motion_analysis": true,
+    "motion_threshold": 50,
+    "alert_cooldown_seconds": 5,
+    "min_confidence_for_alert": 0.7
+  },
+  "video_processing": {
+    "fps_limit": 30,
+    "resize_factor": 1.0,
+    "enable_gpu": true,
+    "batch_processing": false
+  },
+  "alert_system": {
+    "enable_audio_alerts": true,
+    "enable_visual_alerts": true,
+    "enable_logging": true,
+    "log_level": "INFO"
+  },
+  "performance": {
+    "enable_profiling": false,
+    "memory_limit_mb": 2048,
+    "cpu_threads": 4
+  },
+  "output": {
+    "save_detections": true,
+    "output_format": "json",
+    "include_timestamps": true,
+    "save_annotated_frames": false
+  }
+}
