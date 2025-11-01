@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Feeds</title>
+    <style>
+        .video-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .video-feed {
+            width: 45%;
+            min-width: 300px;
+            margin-bottom: 20px;
+        }
+        img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vehicle Detection Camera Feeds</h1>
+    <div class="video-container">
+        <div class="video-feed">
+            <h2>Video Feed 1</h2>
+            <img src="{{ url_for('video_feed1') }}" alt="Video Feed 1">
+        </div>
+        <div class="video-feed">
+            <h2>Video Feed 2</h2>
+            <img src="{{ url_for('video_feed2') }}" alt="Video Feed 2">
+        </div>
+    </div>
+    <br>
+    <a href="/">Back to Home Page</a>
+</body>
+</html>
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+<!--    <title>Camera Feed</title>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Vehicle Detection Camera Feed</h1>-->
+<!--    <img src="{{ url_for('video_feed') }}" style="width:100%; height:auto;">-->
+<!--    <br>-->
+<!--    <a href="/">Back to Home Page</a>-->
+<!--</body>-->
+<!--</html>-->

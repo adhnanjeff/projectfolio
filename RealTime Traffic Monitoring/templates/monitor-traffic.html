@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compass Crew - Monitor Traffic</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <img src="Picture1.png">
+        <div class="navigation">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="monitor-traffic.html">Monitor Traffic</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Monitor Traffic Section -->
+    <section id="monitor-traffic">
+        <h2>Monitor Traffic in Real-Time</h2>
+        <p>Here you can observe live traffic data, and the system will dynamically adjust signals to ensure optimal traffic flow.</p>
+        <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" style="width:100%; height:auto;">
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer">
+            <p>Made with Love By Team Compass Crew</p>
+        </div>
+    </footer>
+</body>
+</html>
