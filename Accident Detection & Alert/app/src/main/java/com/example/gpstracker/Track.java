@@ -79,7 +79,11 @@ public class Track extends Service {
                     .setContentText("Service enabled")
                     .setSmallIcon(R.mipmap.ic_launcher);
 
-            startForeground(1001, notificationBuilder.build());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(1001, notificationBuilder.build(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+            } else {
+                startForeground(1001, notificationBuilder.build());
+            }
         }
         return super.onStartCommand(intent, flags, startId);
     }
@@ -111,7 +115,10 @@ public class Track extends Service {
     }
 
     private void calculateDanger(double myLat,double myLon,double mySpeed){
-        int size=locations.size();
+        if (locations.isEmpty()) {
+            return;
+        }
+        
         ArrayList<Double> distances=new ArrayList<Double>();
         for(Map.Entry m:locations.entrySet()){
             double lat2=(Double)m.getKey();
@@ -119,13 +126,16 @@ public class Track extends Service {
             double dist=getDistance(myLat,myLon,lat2,lon2);
             distances.add(dist);
         }
+        
+        if (distances.isEmpty()) {
+            return;
+        }
+        
         Collections.sort(distances);
         double closest=distances.get(0);
         Intent intent=new Intent();
         intent.setAction("distance");
         intent.putExtra("closest",closest);
-        //intent.putExtra("speed",mySpeed);
         sendBroadcast(intent);
-
     }
 }

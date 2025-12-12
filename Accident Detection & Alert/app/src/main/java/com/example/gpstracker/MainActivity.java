@@ -124,7 +124,11 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         checkLocationPermission();
-        registerReceiver(broadcastReceiver, new IntentFilter("distance"));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(broadcastReceiver, new IntentFilter("distance"), Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(broadcastReceiver, new IntentFilter("distance"));
+        }
     }
 
     private void checkLocationPermission() {
@@ -137,6 +141,16 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     }
 
     private void setupLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, locationListenerGPS);
     }
 
@@ -239,4 +253,16 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
         }
     };
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int result = textToSpeech.setLanguage(Locale.US);
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "Language not supported");
+            }
+        } else {
+            Log.e("TTS", "Initialization failed");
+        }
+    }
 }
