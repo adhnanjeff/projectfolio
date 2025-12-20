@@ -1,0 +1,14 @@
+feature,importance
+Category_of_customers,0.13554928939694422
+Coupons_offered,0.12550147945267173
+Maximum_bill,0.12407592958861409
+Customer_ID,0.10565204083974568
+No_of_orders_placed,0.1021878789171805
+Coupon_consumption_status,0.08125018505814369
+Minimum_bill,0.07542596096806127
+Last_order_placed_date,0.07256890163134698
+No_of_issues_raised,0.06388277092374954
+Premium_membership,0.06141985242560526
+Average_food_rating,0.01935056384267806
+Average_happiness_rating,0.01871314424664634
+Customer_rating,0.014422002708612554

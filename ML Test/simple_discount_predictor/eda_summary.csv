@@ -1,0 +1,5 @@
+,0
+dataset_shape,"(19738, 14)"
+target_mean,36.72499746681528
+target_std,17.715471575241626
+top_correlations,"{'Discount_percentage': 1.0, 'Coupons_offered': 0.13971413801326182, 'Premium_membership': 0.12266637894700459, 'No_of_orders_placed': 0.11642878999410702, 'Maximum_bill': 0.09670579110588039, 'Coupon_consumption_status': 0.06286895962319329}"
