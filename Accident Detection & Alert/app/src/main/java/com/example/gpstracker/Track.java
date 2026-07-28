@@ -1,42 +1,79 @@
 package com.example.gpstracker;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
-import android.app.admin.DevicePolicyManager;
-import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.MediaPlayer;
+import android.location.Location;
 import android.os.Build;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 
+import com.example.gpstracker.data.ActivityEvent;
+import com.example.gpstracker.data.DangerZone;
+import com.example.gpstracker.data.DangerZoneStore;
+import com.example.gpstracker.data.TripStore;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Locale;
 
+/**
+ * Foreground service that watches the user's location, measures the distance to the nearest
+ * danger zone, and records trip statistics.
+ */
 public class Track extends Service {
 
-    FusedLocationProviderClient fusedLocationProviderClient;
-    LocationCallback locationCallback;
-    HashMap<Double,Double> locations=new HashMap<Double,Double>();//Creating HashMap
+    public static final String ACTION_UPDATE = "com.example.gpstracker.LOCATION_UPDATE";
+    public static final String EXTRA_CLOSEST_KM = "closest";
+    public static final String EXTRA_ZONE_NAME = "zone_name";
+    public static final String EXTRA_SPEED_KMH = "speed";
+    public static final String EXTRA_LATITUDE = "latitude";
+    public static final String EXTRA_LONGITUDE = "longitude";
+    public static final String EXTRA_HAS_ZONES = "has_zones";
+
+    /** Radius, in km, within which a location counts as inside a danger zone. */
+    public static final double DANGER_RADIUS_KM = 1.5;
+
+    private static final String CHANNEL_ID = "safedrive_tracking";
+    private static final int NOTIFICATION_ID = 1001;
+    private static final long UPDATE_INTERVAL_MS = 5000L;
+
+    private static final float TRIP_START_SPEED_KMH = 10f;
+    private static final float TRIP_IDLE_SPEED_KMH = 3f;
+    private static final long TRIP_IDLE_TIMEOUT_MS = 120_000L;
+
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationCallback locationCallback;
+    private DangerZoneStore zoneStore;
+    private TripStore tripStore;
+
+    // Active-trip accumulators.
+    private boolean tripActive = false;
+    private float tripDistanceKm = 0f;
+    private float tripMaxSpeed = 0f;
+    private float tripSpeedSum = 0f;
+    private int tripSpeedSamples = 0;
+    private int tripViolations = 0;
+    private boolean overSpeedLimit = false;
+    private long idleSinceMs = 0L;
+    private Location lastLocation;
+    private boolean insideDangerZone = false;
 
     @Nullable
     @Override
@@ -47,95 +84,221 @@ public class Track extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        locations.put(10.9760560,76.9667759);  //myHouse
-        locations.put(37.4219,-122.084);//google
-        locations.put(11.101138, 76.965810); //stone bench
-
+        zoneStore = new DangerZoneStore(this);
+        tripStore = new TripStore(this);
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
         locationCallback = new LocationCallback() {
             @Override
-            public void onLocationResult(LocationResult locationResult) {
-                super.onLocationResult(locationResult);
-                Log.d("myLog ", "Lat is: " + locationResult.getLastLocation().getLatitude() + " Long is " + locationResult.getLastLocation().getLongitude());
-                double myLat=locationResult.getLastLocation().getLatitude();
-                double myLon=locationResult.getLastLocation().getLongitude();
-                double mySpeed=locationResult.getLastLocation().getSpeed()*3.6;
-                Log.d("close","The speed is"+locationResult.getLastLocation().getSpeed());
-                calculateDanger(myLat,myLon,mySpeed);
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                Location location = locationResult.getLastLocation();
+                if (location == null) {
+                    return;
+                }
+                handleLocation(location);
             }
         };
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        startInForeground();
         requestLocation();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("FOREGROUND_SERVICE_CHANNEL_ID", "Foreground Service Channel", NotificationManager.IMPORTANCE_HIGH);
-            NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+        // Restart if the system kills us – this is a safety feature.
+        return START_STICKY;
+    }
 
-            Notification.Builder notificationBuilder = new Notification.Builder(this, "FOREGROUND_SERVICE_CHANNEL_ID")
-                    .setContentTitle("Service is running")
-                    .setContentText("Service enabled")
-                    .setSmallIcon(R.mipmap.ic_launcher);
+    private void startInForeground() {
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && manager != null) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID, "Trip tracking", NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription("Keeps SafeDrive monitoring your location while driving.");
+            manager.createNotificationChannel(channel);
+        }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(1001, notificationBuilder.build(), android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent contentIntent = PendingIntent.getActivity(
+                this, 0, new Intent(this, MainActivity.class), flags);
+
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(getString(R.string.app_name))
+                .setContentText("Monitoring for accident-prone areas")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
+                .setOngoing(true)
+                .setContentIntent(contentIntent)
+                .build();
+
+        // startForeground must run on every API level, not only on O+, or the service is
+        // treated as a background service and killed on modern Android.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification,
+                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
+    }
+
+    private void requestLocation() {
+        if (!hasLocationPermission()) {
+            stopSelf();
+            return;
+        }
+        LocationRequest locationRequest = new LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY, UPDATE_INTERVAL_MS)
+                .setMinUpdateIntervalMillis(UPDATE_INTERVAL_MS)
+                .build();
+        fusedLocationProviderClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper());
+    }
+
+    private boolean hasLocationPermission() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void handleLocation(Location location) {
+        float speedKmh = location.getSpeed() * 3.6f;
+        updateTrip(location, speedKmh);
+        broadcastDanger(location, speedKmh);
+        lastLocation = location;
+    }
+
+    /** Starts, accumulates, and ends trips based on movement. */
+    private void updateTrip(Location location, float speedKmh) {
+        long now = System.currentTimeMillis();
+
+        if (!tripActive) {
+            if (speedKmh >= TRIP_START_SPEED_KMH) {
+                tripActive = true;
+                tripDistanceKm = 0f;
+                tripMaxSpeed = 0f;
+                tripSpeedSum = 0f;
+                tripSpeedSamples = 0;
+                tripViolations = 0;
+                overSpeedLimit = false;
+                idleSinceMs = 0L;
             } else {
-                startForeground(1001, notificationBuilder.build());
+                return;
             }
         }
-        return super.onStartCommand(intent, flags, startId);
+
+        if (lastLocation != null) {
+            tripDistanceKm += location.distanceTo(lastLocation) / 1000f;
+        }
+        tripMaxSpeed = Math.max(tripMaxSpeed, speedKmh);
+        tripSpeedSum += speedKmh;
+        tripSpeedSamples++;
+
+        // Count one violation per crossing of the limit, not one per sample.
+        if (speedKmh > TripStore.SPEED_LIMIT_KMH) {
+            if (!overSpeedLimit) {
+                overSpeedLimit = true;
+                tripViolations++;
+                tripStore.addEvent(ActivityEvent.TYPE_VIOLATION,
+                        String.format(Locale.getDefault(), "Speed limit exceeded – %.0f km/h", speedKmh));
+            }
+        } else {
+            overSpeedLimit = false;
+        }
+
+        if (speedKmh < TRIP_IDLE_SPEED_KMH) {
+            if (idleSinceMs == 0L) {
+                idleSinceMs = now;
+            } else if (now - idleSinceMs >= TRIP_IDLE_TIMEOUT_MS) {
+                endTrip();
+            }
+        } else {
+            idleSinceMs = 0L;
+        }
     }
 
-    @SuppressLint("VisibleForTests")
-    private void requestLocation() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+    private void endTrip() {
+        if (!tripActive) {
             return;
         }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+        float avgSpeed = tripSpeedSamples == 0 ? 0f : tripSpeedSum / tripSpeedSamples;
+        tripStore.recordTrip(tripDistanceKm, tripMaxSpeed, avgSpeed, tripViolations);
+        tripStore.addEvent(ActivityEvent.TYPE_TRIP,
+                String.format(Locale.getDefault(), "Trip completed – %.1f km, max %.0f km/h",
+                        tripDistanceKm, tripMaxSpeed));
+        tripActive = false;
+        idleSinceMs = 0L;
     }
 
+    private void broadcastDanger(Location location, float speedKmh) {
+        List<DangerZone> zones = zoneStore.getAll();
 
-    private double getDistance(double lat1,double lon1,double lat2,double lon2){
-        int R=6371;
-        double dLat=deg2rad(lat2-lat1);
-        double dLon=deg2rad(lon2-lon1);
-        double a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(deg2rad(lat1))*Math.cos(deg2rad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
-        double c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-        double d=R*c;
-        return d;
-    }
+        Intent intent = new Intent(ACTION_UPDATE);
+        intent.setPackage(getPackageName());
+        intent.putExtra(EXTRA_SPEED_KMH, speedKmh);
+        intent.putExtra(EXTRA_LATITUDE, location.getLatitude());
+        intent.putExtra(EXTRA_LONGITUDE, location.getLongitude());
+        intent.putExtra(EXTRA_HAS_ZONES, !zones.isEmpty());
 
-    private double deg2rad(double deg){
-        return deg* (Math.PI/180);
-    }
-
-    private void calculateDanger(double myLat,double myLon,double mySpeed){
-        if (locations.isEmpty()) {
+        if (zones.isEmpty()) {
+            insideDangerZone = false;
+            sendBroadcast(intent);
             return;
         }
-        
-        ArrayList<Double> distances=new ArrayList<Double>();
-        for(Map.Entry m:locations.entrySet()){
-            double lat2=(Double)m.getKey();
-            double lon2=(Double)m.getValue();
-            double dist=getDistance(myLat,myLon,lat2,lon2);
-            distances.add(dist);
+
+        double closest = Double.MAX_VALUE;
+        String closestName = "";
+        for (DangerZone zone : zones) {
+            double distance = getDistance(
+                    location.getLatitude(), location.getLongitude(), zone.latitude, zone.longitude);
+            if (distance < closest) {
+                closest = distance;
+                closestName = zone.name;
+            }
         }
-        
-        if (distances.isEmpty()) {
-            return;
+
+        // Log a danger-zone entry once per entry rather than on every fix inside the zone.
+        if (closest <= DANGER_RADIUS_KM) {
+            if (!insideDangerZone) {
+                insideDangerZone = true;
+                tripStore.recordDangerEntry();
+                tripStore.addEvent(ActivityEvent.TYPE_DANGER, "Entered danger zone – " + closestName);
+            }
+        } else {
+            insideDangerZone = false;
         }
-        
-        Collections.sort(distances);
-        double closest=distances.get(0);
-        Intent intent=new Intent();
-        intent.setAction("distance");
-        intent.putExtra("closest",closest);
+
+        intent.putExtra(EXTRA_CLOSEST_KM, closest);
+        intent.putExtra(EXTRA_ZONE_NAME, closestName);
         sendBroadcast(intent);
+    }
+
+    /** Great-circle distance in kilometres (haversine). */
+    private double getDistance(double lat1, double lon1, double lat2, double lon2) {
+        final int earthRadiusKm = 6371;
+        double dLat = deg2rad(lat2 - lat1);
+        double dLon = deg2rad(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadiusKm * c;
+    }
+
+    private double deg2rad(double deg) {
+        return deg * (Math.PI / 180);
+    }
+
+    @Override
+    public void onDestroy() {
+        // Persist an in-flight trip instead of silently discarding it.
+        endTrip();
+        if (fusedLocationProviderClient != null && locationCallback != null) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+        }
+        Log.d("Track", "Tracking service stopped");
+        super.onDestroy();
     }
 }

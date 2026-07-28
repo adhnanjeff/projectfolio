@@ -1,234 +1,141 @@
-# 🚗 SafeDrive Monitor - Enhanced Accident Detection & Alert System
+# 🚗 SafeDrive Monitor — Accident-Prone Zone Detection & Alert
 
 <div align="center">
 
 ![Version](https://img.shields.io/badge/version-2.0-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Android-green.svg)
 ![API](https://img.shields.io/badge/API-21%2B-orange.svg)
-![License](https://img.shields.io/badge/license-MIT-red.svg)
+![Language](https://img.shields.io/badge/language-Java-red.svg)
 
-*An intelligent safety companion for modern drivers*
+*A driving safety companion that warns you before you reach a known accident-prone area.*
 
 </div>
 
-## 🌟 Overview
+## Overview
 
-SafeDrive Monitor is a comprehensive accident detection and prevention system that combines real-time GPS tracking, AI-powered accident detection, and modern mobile technology to enhance road safety.
+SafeDrive Monitor is an Android app that tracks your location in the background, measures the
+distance to accident-prone areas you have marked, and escalates through visual, audible, spoken,
+and haptic alerts as you approach one. It also records trip statistics and can send an SOS with
+your live location to emergency contacts.
 
 <p align="center">
-<img width="300" height="500" src="IMG-20220108-WA0083.jpg"/>
+<img width="300" src="IMG-20220108-WA0083.jpg"/>
 </p>
 
-## ✨ Enhanced Features (v2.0)
+## Features
 
-### 🎨 **Modern UI/UX**
-- **Material Design 3** with dynamic theming
-- **Dark/Light mode** with system theme support
-- **Glassmorphism effects** and smooth animations
-- **Card-based layout** for better information hierarchy
-- **Responsive design** with improved accessibility
+### Live monitoring
+- Foreground location service with a persistent notification
+- Distance to the nearest danger zone, updated every 5 seconds
+- Live speed readout in km/h
+- Colour-coded status banner: **Safe** (green) → **Approaching** (amber, within 3 km) →
+  **Accident-Prone Zone** (red, within 1.5 km)
+- Reverse-geocoded street address, resolved off the main thread
 
-### 🚨 **Safety & Emergency**
-- **One-tap SOS button** for immediate emergency alerts
-- **Emergency contacts management** with quick dial
-- **Auto-emergency services integration** (Police, Ambulance, Fire)
-- **Voice alerts** with Text-to-Speech technology
-- **Haptic feedback** for critical alerts
-- **Smart screen locking** in danger zones
+### Alerts
+- Audible alert tone on entering a zone
+- Spoken warning via Text-to-Speech, naming the zone
+- Vibration
+- Alerts are rate-limited to once per minute so they do not become noise
 
-### 📊 **Analytics & Insights**
-- **Driving behavior analytics** with safety scoring
-- **Speed monitoring** with real-time warnings
-- **Trip history** and route analysis
-- **Accident-prone area mapping** with heat maps
-- **Performance metrics** and improvement suggestions
+### Driving mode (device admin)
+When enabled, the screen locks 10 seconds after you enter a danger zone, discouraging phone use
+at the moments that matter most. Requires device administrator permission, which you can revoke
+at any time from within the app.
 
-### 🤖 **Enhanced AI Detection**
-- **Multi-model accident detection** (YOLO + TensorFlow)
-- **Motion pattern analysis** for crash prediction
-- **Real-time video processing** with optimized performance
-- **Confidence scoring** for accurate alerts
-- **False positive reduction** algorithms
+### Emergency SOS
+One tap on the SOS button sends an SMS to every saved emergency contact containing your
+coordinates and a Google Maps link. A confirmation dialog prevents accidental sends.
 
-### 🔧 **Technical Improvements**
-- **Background service optimization** for battery efficiency
-- **Offline mode support** for core functionality
-- **Enhanced location accuracy** with multiple providers
-- **Crash detection algorithms** using device sensors
-- **Data encryption** for privacy protection
+### Emergency contacts
+Add, call, and delete personal contacts, stored on-device. Police / ambulance / fire buttons open
+your dialer with the number pre-filled — deliberately *not* an automatic call, so a stray tap
+cannot dial emergency services.
 
-## 📱 App Features
+### Danger zone management
+Add zones from your current GPS position or by entering coordinates manually, and delete them.
+Coordinates are validated before saving. Two sample zones ship on first launch.
 
-### **Main Dashboard**
-- Real-time safety status indicator
-- Current location with address
-- Distance to nearest danger zone
-- Live speed monitoring
-- Quick access controls
+### Trip analytics
+Trips start automatically above 10 km/h and end after two minutes stationary. The app records:
 
-### **Emergency System**
-- Instant SOS with location sharing
-- Emergency contacts management
-- Auto-dial emergency services
-- Voice-guided emergency procedures
+| Metric | Notes |
+|---|---|
+| Total trips | Completed trips |
+| Distance | Cumulative km |
+| Average / max speed | Across all trips |
+| Speeding violations | One per crossing above 80 km/h |
+| Safety score | 100 minus penalties for speeding and danger-zone entries |
+| Activity timeline | Last 50 events (trips, zone entries, violations, SOS) |
 
-### **Analytics Dashboard**
-- Total trips and safety score
-- Speed analysis and violations
-- Recent activity timeline
-- Driving pattern insights
+History can be cleared from the analytics screen.
 
-### **Smart Alerts**
-- Voice warnings for danger zones
-- Speed limit notifications
-- Weather-based safety alerts
-- Maintenance reminders
+## Technical Stack
 
-## 🛠️ Technical Stack
+- **Language**: Java, `minSdk 21`, `targetSdk 34`
+- **UI**: Material Design 3, light and dark themes
+- **Location**: Google Play Services `FusedLocationProviderClient`
+- **Persistence**: SharedPreferences with JSON payloads (no external database)
+- **Alerts**: `TextToSpeech`, `MediaPlayer`, `Vibrator`
+- **Screen lock**: `DevicePolicyManager` via a `DeviceAdminReceiver`
 
-### **Mobile App (Android)**
-- **Language**: Java
-- **UI Framework**: Material Design 3
-- **Architecture**: MVVM with LiveData
-- **Location Services**: Google Play Services
-- **Database**: SQLite with Room
-- **Animations**: Lottie, ObjectAnimator
+## Permissions
 
-### **AI/ML Models**
-- **Computer Vision**: OpenCV, YOLO v3/v4
-- **Deep Learning**: TensorFlow, Keras
-- **Image Processing**: Python, NumPy
-- **Model Optimization**: TensorFlow Lite
+| Permission | Why |
+|---|---|
+| `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` | Core zone detection |
+| `ACCESS_BACKGROUND_LOCATION` | Monitoring while the app is not in front |
+| `FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_LOCATION` | The tracking service |
+| `POST_NOTIFICATIONS` | Service notification on Android 13+ |
+| `SEND_SMS` | SOS messages |
+| `CALL_PHONE` | Calling a saved contact (falls back to the dialer if denied) |
+| `VIBRATE` | Haptic alerts |
+| Device administrator | Screen lock in driving mode (opt-in) |
 
-### **Backend Services**
-- **Cloud Platform**: Firebase/AWS
-- **Real-time Database**: Firestore
-- **Push Notifications**: FCM
-- **Analytics**: Firebase Analytics
+## Build & Run
 
-## 🚀 Installation & Setup
-
-### **Prerequisites**
-- Android Studio 4.0+
-- Android SDK API 21+
-- Python 3.8+ (for ML models)
-- OpenCV 4.5+
-
-### **Mobile App Setup**
 ```bash
-# Clone the repository
-git clone https://github.com/your-repo/safedrive-monitor.git
-
-# Open in Android Studio
-# Sync Gradle dependencies
-# Run on device or emulator
+./gradlew :app:assembleDebug
 ```
 
-### **ML Model Setup**
+Install on a connected device or emulator:
+
 ```bash
-# Install Python dependencies
-pip install -r requirements.txt
-
-# Download pre-trained models
-python download_models.py
-
-# Run accident detection
-python enhanced_accident_detection.py
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-## 📊 Performance Metrics
+Requires JDK 17+ and the Android SDK (platform 34). Emergency service numbers default to Indian
+codes (100 / 108 / 101) and are defined in `app/src/main/res/values/strings.xml` — change them
+for your region.
 
-| Feature | Performance | Improvement |
-|---------|-------------|-------------|
-| UI Response Time | <100ms | 60% faster |
-| Battery Usage | 15% less | 25% improvement |
-| Detection Accuracy | 92% | 15% increase |
-| False Positives | <5% | 70% reduction |
+## The `Model/` directory
 
-## 🎯 Use Cases
+`Model/` holds a **standalone Python prototype** for vision-based accident detection from video
+(OpenCV + a Keras classifier + optional YOLO). It is research code and is **not connected to the
+Android app** — the app performs no on-device video inference. The trained weights
+(`accident_detection_model.h5`, YOLO `.weights`) are not included in this repository, so the
+scripts will not run until you supply your own.
 
-### **For Individual Drivers**
-- Personal safety monitoring
-- Driving behavior improvement
-- Emergency assistance
-- Route optimization
+```bash
+pip install -r Model/requirements.txt
+python Model/enhanced_accident_detection.py   # needs model weights
+```
 
-### **For Fleet Management**
-- Driver safety scoring
-- Accident prevention
-- Insurance optimization
-- Compliance monitoring
+## Known limitations
 
-### **For Traffic Authorities**
-- Accident hotspot identification
-- Traffic pattern analysis
-- Emergency response optimization
-- Road safety improvement
+- Danger zones are entered manually; there is no crowd-sourced or municipal data feed.
+- Detection is purely geofence-based — the app does not detect a crash from sensors.
+- SOS delivery depends on carrier SMS; there is no delivery receipt or fallback channel.
+- Statistics live in SharedPreferences and are lost if app data is cleared.
 
-## 🔮 Future Enhancements
+## Roadmap
 
-### **Planned Features**
-- **AI-powered route suggestions** based on safety data
-- **Integration with smart city infrastructure**
-- **Wearable device support** (smartwatches)
-- **Social features** for community safety reporting
-- **Insurance integration** for premium discounts
-- **Multi-language support** for global deployment
+- Map view with zone overlays and long-press to add
+- Crash detection from accelerometer data
+- Sensor-triggered automatic SOS with a countdown to cancel
+- Room database and trip-by-trip history
+- Importing accident hotspot datasets
 
-### **Technical Roadmap**
-- **Edge AI processing** for faster detection
-- **5G integration** for real-time communication
-- **Blockchain** for secure data sharing
-- **IoT integration** with vehicle systems
-- **AR/VR** for immersive safety training
+## License
 
-## 📈 Impact & Benefits
-
-### **Safety Improvements**
-- **40% reduction** in accident response time
-- **25% decrease** in accident severity
-- **60% improvement** in emergency contact efficiency
-- **Real-time alerts** prevent 30% of potential accidents
-
-### **User Experience**
-- **Modern, intuitive interface** increases user engagement
-- **Personalized insights** improve driving behavior
-- **Seamless integration** with daily driving routine
-- **Privacy-focused design** ensures data security
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### **Development Areas**
-- UI/UX improvements
-- ML model optimization
-- New feature development
-- Performance enhancements
-- Documentation updates
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- OpenCV community for computer vision tools
-- Material Design team for UI guidelines
-- TensorFlow team for ML frameworks
-- Android development community
-
-## 📞 Support
-
-For support, email support@safedrive-monitor.com or join our [Discord community](https://discord.gg/safedrive).
-
----
-
-<div align="center">
-
-**Made with ❤️ for safer roads**
-
-[Website](https://safedrive-monitor.com) • [Documentation](https://docs.safedrive-monitor.com) • [API](https://api.safedrive-monitor.com)
-
-</div>
-
+MIT

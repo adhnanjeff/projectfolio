@@ -3,13 +3,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:scrollbars="none">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="24dp">
 
         <!-- Header -->
         <LinearLayout
@@ -17,60 +21,67 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="16dp">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_back"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:text="←"
-                style="@style/Widget.Material3.Button.TextButton"
+                android:minWidth="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:gravity="center"
+                android:contentDescription="@string/back"
                 android:textSize="20sp" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Driving Analytics"
+                android:text="@string/driving_analytics"
                 style="@style/HeadlineText"
-                android:textSize="24sp"
+                android:textSize="22sp"
+                android:layout_marginBottom="0dp"
                 android:layout_marginStart="8dp" />
 
         </LinearLayout>
 
-        <!-- Stats Overview -->
+        <!-- Headline stats -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp">
+                android:layout_marginEnd="6dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Trips"
+                        android:text="@string/total_trips"
                         style="@style/CaptionText" />
 
                     <TextView
                         android:id="@+id/total_trips"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="24"
-                        style="@style/HeadlineText"
+                        android:text="0"
                         android:textSize="32sp"
+                        android:textStyle="bold"
                         android:textColor="@color/primary" />
 
                 </LinearLayout>
@@ -78,32 +89,33 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                style="@style/CardStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginStart="8dp">
+                android:layout_marginStart="6dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Safety Score"
+                        android:text="@string/safety_score"
                         style="@style/CaptionText" />
 
                     <TextView
                         android:id="@+id/safety_score"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="85%"
-                        style="@style/HeadlineText"
+                        android:text="100%"
                         android:textSize="32sp"
+                        android:textStyle="bold"
                         android:textColor="@color/safe_green" />
 
                 </LinearLayout>
@@ -112,40 +124,13 @@
 
         </LinearLayout>
 
-        <!-- Recent Activity -->
+        <!-- Speed analysis -->
         <com.google.android.material.card.MaterialCardView
-            style="@style/CardStyle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Recent Activity"
-                    style="@style/HeadlineText"
-                    android:textSize="20sp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycler_activity"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="12dp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Speed Analysis -->
-        <com.google.android.material.card.MaterialCardView
-            style="@style/CardStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,13 +143,13 @@
                     android:layout_height="wrap_content"
                     android:text="Speed Analysis"
                     style="@style/HeadlineText"
-                    android:textSize="20sp" />
+                    android:textSize="18sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="12dp">
+                    android:layout_marginTop="8dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -176,17 +161,17 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Avg Speed"
+                            android:text="@string/avg_speed"
                             style="@style/CaptionText" />
 
                         <TextView
                             android:id="@+id/avg_speed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="45 km/h"
+                            android:text="0 km/h"
                             style="@style/BodyText"
                             android:textStyle="bold"
-                            android:textSize="18sp" />
+                            android:textSize="17sp" />
 
                     </LinearLayout>
 
@@ -200,17 +185,17 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Max Speed"
+                            android:text="@string/max_speed"
                             style="@style/CaptionText" />
 
                         <TextView
                             android:id="@+id/max_speed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="78 km/h"
+                            android:text="0 km/h"
                             style="@style/BodyText"
                             android:textStyle="bold"
-                            android:textSize="18sp" />
+                            android:textSize="17sp" />
 
                     </LinearLayout>
 
@@ -224,18 +209,42 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Violations"
+                            android:text="@string/violations"
                             style="@style/CaptionText" />
 
                         <TextView
                             android:id="@+id/violations"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="3"
+                            android:text="0"
                             style="@style/BodyText"
                             android:textStyle="bold"
-                            android:textSize="18sp"
+                            android:textSize="17sp"
                             android:textColor="@color/warning_orange" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Distance"
+                            style="@style/CaptionText" />
+
+                        <TextView
+                            android:id="@+id/total_distance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 km"
+                            style="@style/BodyText"
+                            android:textStyle="bold"
+                            android:textSize="17sp" />
 
                     </LinearLayout>
 
@@ -244,6 +253,57 @@
             </LinearLayout>
 
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Recent activity -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/recent_activity"
+                    style="@style/HeadlineText"
+                    android:textSize="18sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recycler_activity"
+                    android:layout_width="match_parent"
+                    android:layout_height="260dp" />
+
+                <TextView
+                    android:id="@+id/empty_activity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_activity"
+                    style="@style/BodyText"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:paddingTop="24dp"
+                    android:paddingBottom="24dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_clear_history"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/clear_history"
+            android:textColor="@color/danger_red" />
 
     </LinearLayout>
 

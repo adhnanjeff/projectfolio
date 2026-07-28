@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="20dp">
 
     <!-- Header -->
     <LinearLayout
@@ -12,41 +14,54 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:text="←"
-            style="@style/Widget.Material3.Button.TextButton"
+            android:minWidth="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:gravity="center"
+            android:contentDescription="@string/back"
             android:textSize="20sp" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Emergency Contacts"
+            android:text="@string/emergency_contacts"
             style="@style/HeadlineText"
-            android:textSize="24sp"
+            android:textSize="22sp"
+            android:layout_marginBottom="0dp"
             android:layout_marginStart="8dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_add_contact"
+            style="@style/PrimaryButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:text="+"
-            style="@style/PrimaryButton"
+            android:minWidth="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:contentDescription="@string/add_contact"
             android:textSize="20sp"
             app:cornerRadius="24dp" />
 
     </LinearLayout>
 
-    <!-- Emergency Services Card -->
+    <!-- Emergency services -->
     <com.google.android.material.card.MaterialCardView
-        style="@style/CardStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -61,38 +76,65 @@
                 style="@style/HeadlineText"
                 android:textSize="18sp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Opens your dialer with the number ready."
+                style="@style/CaptionText"
+                android:layout_marginBottom="12dp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp">
+                android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_police"
+                    style="@style/DangerButton"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:text="Police"
-                    style="@style/DangerButton"
+                    android:text="@string/police"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:minWidth="0dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:layout_marginEnd="4dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_ambulance"
+                    style="@style/DangerButton"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:text="Ambulance"
-                    style="@style/DangerButton"
+                    android:text="@string/ambulance"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:minWidth="0dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_fire"
+                    style="@style/DangerButton"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
                     android:layout_weight="1"
-                    android:text="Fire Dept"
-                    style="@style/DangerButton"
+                    android:text="@string/fire"
+                    android:textSize="12sp"
+                    android:maxLines="1"
+                    android:minWidth="0dp"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
                     android:layout_marginStart="4dp" />
 
             </LinearLayout>
@@ -101,20 +143,37 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Personal Contacts -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Personal Contacts"
         style="@style/HeadlineText"
         android:textSize="18sp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="8dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_contacts"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_contacts"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:id="@+id/empty_contacts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/no_contacts"
+            style="@style/BodyText"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
 </LinearLayout>

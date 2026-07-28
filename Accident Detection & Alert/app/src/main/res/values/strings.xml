@@ -1,4 +1,75 @@
 <resources>
-    <string name="app_name">GPSTracker</string>
-    <string name="app_description">YOu should allow my application to lock the screen</string>
+    <string name="app_name">SafeDrive Monitor</string>
+    <string name="app_description">SafeDrive Monitor uses device administrator access to lock the screen when you enter an accident-prone zone while driving mode is enabled.</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">SafeDrive Monitor</string>
+    <string name="sos">SOS</string>
+    <string name="current_status">Current Status</string>
+    <string name="status_safe">Safe Zone</string>
+    <string name="status_caution">Approaching Danger Zone</string>
+    <string name="status_danger">Accident-Prone Zone</string>
+    <string name="status_waiting">Waiting for GPS…</string>
+    <string name="location_information">Location Information</string>
+    <string name="fetching_location">Fetching location…</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="safety_metrics">Safety Metrics</string>
+    <string name="distance_to_danger">Distance to Danger</string>
+    <string name="current_speed">Current Speed</string>
+    <string name="controls">Controls</string>
+    <string name="enable_driving_mode">Enable Driving Mode</string>
+    <string name="disable_driving_mode">Disable Driving Mode</string>
+    <string name="view_map">View Map</string>
+    <string name="danger_zones">Danger Zones</string>
+    <string name="history">History</string>
+    <string name="contacts">Contacts</string>
+    <string name="analytics">Analytics</string>
+    <string name="placeholder_dash">--</string>
+    <string name="placeholder_speed">0 km/h</string>
+
+    <!-- Emergency contacts -->
+    <string name="emergency_contacts">Emergency Contacts</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="police">Police</string>
+    <string name="ambulance">Ambulance</string>
+    <string name="fire">Fire</string>
+    <string name="back">Back</string>
+    <string name="contact_name">Name</string>
+    <string name="contact_number">Phone number</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="call">Call</string>
+    <string name="no_contacts">No emergency contacts yet.\nAdd one so SOS can reach someone.</string>
+    <!-- Emergency service numbers. Change these to match your country. -->
+    <string name="emergency_police_number">100</string>
+    <string name="emergency_ambulance_number">108</string>
+    <string name="emergency_fire_number">101</string>
+
+    <!-- Danger zones -->
+    <string name="manage_danger_zones">Manage Danger Zones</string>
+    <string name="add_zone">Add Zone</string>
+    <string name="add_current_location">Add Current Location</string>
+    <string name="zone_name">Zone name</string>
+    <string name="no_zones">No danger zones configured.\nAdd one to start receiving alerts.</string>
+
+    <!-- Analytics -->
+    <string name="driving_analytics">Driving Analytics</string>
+    <string name="total_trips">Total Trips</string>
+    <string name="safety_score">Safety Score</string>
+    <string name="avg_speed">Avg Speed</string>
+    <string name="max_speed">Max Speed</string>
+    <string name="violations">Violations</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="no_activity">No activity recorded yet.</string>
+    <string name="clear_history">Clear History</string>
+
+    <!-- Alerts -->
+    <string name="sos_confirm_title">Send SOS?</string>
+    <string name="sos_confirm_message">Your live location will be sent to all saved emergency contacts.</string>
+    <string name="sos_send">Send SOS</string>
+    <string name="sos_sent">SOS sent to %1$d contact(s)</string>
+    <string name="sos_no_contacts">Add an emergency contact first</string>
+    <string name="sos_no_location">Location not available yet</string>
 </resources>
